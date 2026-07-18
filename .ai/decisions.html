@@ -95,5 +95,35 @@ persistence of last-used settings (including the script) across sessions.</p>
   <li>Canvas painting is throttled in background tabs — with a watermark set, the tab should stay visible while recording (documented). Direct-track mode (no watermark) is unaffected.</li>
   <li>Mirror preview is disabled while a watermark is active: CSS mirroring would flip the text too, breaking preview-equals-recording.</li>
 </ul>
+
+<h1>ADR-004 — Teleprompter follow engine v2 (two cursors + pace extrapolation)</h1>
+<p class="meta">Date: 2026-07-17 · Status: Accepted · Supersedes: the single-cursor design in ADR-002</p>
+
+<h2>Context</h2>
+<p>User feedback: (1) the highlight visibly skipped words, which was disorienting; (2) words were
+greyed out as "spoken" when they had not been spoken — the grey boundary must only advance on
+certainty.</p>
+
+<h2>Decision</h2>
+<ul>
+  <li><strong>Two cursors.</strong> <code>confirmedIndex</code> (grey boundary) advances only on <em>final</em> speech results matched within 5 words. <code>focusIndex</code> (highlight) is speculative: interim results and far final matches (up to 10 words) may move it, but never grey anything. Single-letter words are ignored as recognition noise.</li>
+  <li><strong>Pace extrapolation.</strong> A 250 ms engine tick measures the reader's pace from the last ≤12 final-match samples (clamped 0.6–5 words/s, slider value as cold-start default). After 600 ms of recognition silence, the highlight glides forward fractionally at that pace; capped at +10 words past the last speech anchor and suspended after 6 s of silence (reader paused). New matches re-anchor; the highlight never moves backward.</li>
+  <li>Timed-scroll mode drives both cursors together (it asserts "said" by definition).</li>
+  <li>Verified by a 41-case node test suite driving the real script with a stub DOM and a controllable clock.</li>
+</ul>
+
+<h1>ADR-005 — Dual license + stealth watermark editing</h1>
+<p class="meta">Date: 2026-07-17 · Status: Accepted</p>
+
+<h2>Context</h2>
+<p>Requested: a licensing model that requires retaining the copyright/watermark message unless a paid
+version is used; the watermark textbox must not be editable unless the user clicks its label, with no
+hover-cursor hint.</p>
+
+<h2>Decision</h2>
+<ul>
+  <li><strong>Dual license</strong> in <code>LICENSE</code>: (A) Free Attribution License — MIT-style permissions conditioned on retaining the copyright notice, the watermark feature, and its default attribution text in all copies/deployments/recordings, plus no-sale; (B) paid Commercial License waiving those conditions. No OSI-approved license supports payment-conditional attribution, so clause (A)(2) is a custom source-available restriction; the software is not "open source" in the OSI sense under this model.</li>
+  <li><strong>Stealth edit affordance.</strong> The watermark input is <code>readonly</code> by default; clicking the <em>label</em> removes the attribute (native label behaviour then focuses the field — no custom cursor styling anywhere, so nothing hints at clickability). Re-locks on reload. Documented in README, since a license-required control must still be discoverable by legitimate users.</li>
+</ul>
 </body>
 </html>

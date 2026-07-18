@@ -315,8 +315,8 @@
     </div>
 
     <div class="field full">
-      <label for="watermarkInput">Watermark <span class="subtle">(burned into the recording across the bottom — leave empty for none)</span></label>
-      <input type="text" id="watermarkInput" maxlength="200" spellcheck="false">
+      <label for="watermarkInput" id="watermarkLabel">Watermark <span class="subtle">(burned into the recording across the bottom — leave empty for none)</span></label>
+      <input type="text" id="watermarkInput" maxlength="200" spellcheck="false" readonly>
     </div>
 
     <div class="field">
@@ -414,7 +414,7 @@ const els = {
   cameraSelect: $('cameraSelect'), micSelect: $('micSelect'),
   resolutionSelect: $('resolutionSelect'), fpsSelect: $('fpsSelect'),
   qualitySelect: $('qualitySelect'), countdownSelect: $('countdownSelect'),
-  watermarkInput: $('watermarkInput'),
+  watermarkInput: $('watermarkInput'), watermarkLabel: $('watermarkLabel'),
   mirrorCheck: $('mirrorCheck'), muteCheck: $('muteCheck'),
   micLevel: $('micLevel'),
   prompterEnable: $('prompterEnable'), prompterScript: $('prompterScript'), followMode: $('followMode'),
@@ -1441,6 +1441,11 @@ els.fpsSelect.onchange    = () => { saveSettings(); if (state === 'idle') { if (
 els.qualitySelect.onchange = saveSettings;
 els.countdownSelect.onchange = saveSettings;
 let watermarkSaveTimer = null;
+// editing is deliberately unobvious: the field stays read-only until the
+// "Watermark" label itself is clicked (no hover-cursor hint, per design)
+els.watermarkLabel.addEventListener('click', () => {
+  els.watermarkInput.readOnly = false;
+});
 els.watermarkInput.oninput = () => {
   clearTimeout(watermarkSaveTimer);
   watermarkSaveTimer = setTimeout(() => {

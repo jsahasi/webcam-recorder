@@ -37,9 +37,11 @@ may prompt for *Screen Recording* permission too.)
     back to timed scroll automatically.
 - **Watermark**: a small credit line burned into the bottom of the video —
   defaults to `Webcam recording Agent: copyright Sahasi <current year>` (year is
-  automatic). Edit it to anything, or clear the field for no watermark. When set,
-  the preview shows exactly what the file will look like, in all modes (webcam,
-  screen, screen+PiP).
+  automatic). Clear the field for no watermark. When set, the preview shows
+  exactly what the file will look like, in all modes (webcam, screen, screen+PiP).
+  The field is read-only by design; to edit it, **click the word "Watermark"
+  above the field** to unlock it (required for the free license's attribution
+  terms to stay intact by default — see [License](#license)).
 - **Persistence**: every setting — devices, resolution, fps, quality, countdown,
   overlay options, watermark text, teleprompter on/off, **the script itself**,
   pace — is saved to localStorage and restored on next visit.
@@ -100,3 +102,14 @@ may prompt for *Screen Recording* permission too.)
 | Teleprompter doesn't follow my voice | Chrome needs internet for speech recognition; check the Teleprompter status line — it falls back to timed scroll |
 | 4K option does nothing | Camera tops out below 4K — the actual negotiated resolution is shown under the preview |
 | Want to wipe saved settings/script | DevTools → Application → Local Storage, or run `localStorage.clear()` in the console |
+| Can't type in the watermark field | It's read-only by default — click the word **"Watermark"** above the field to unlock editing |
+
+## License
+
+Dual-licensed — see [LICENSE](LICENSE):
+
+- **Free Attribution License**: free to use, copy, and modify, but the copyright
+  notice and the built-in watermark (with its default attribution text) must be
+  retained in all copies, deployments, and recordings. No selling.
+- **Commercial License** (paid): removes the watermark/attribution requirement
+  and permits sale and sublicensing. Contact the copyright holder.
