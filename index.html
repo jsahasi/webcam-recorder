@@ -4,94 +4,139 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Webcam Studio — High Quality Recorder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0b0e14;
-    --panel: #131824;
-    --panel-2: #1a2130;
-    --border: #2a3348;
-    --text: #e6e9f0;
-    --muted: #8b93a7;
-    --accent: #4f8cff;
-    --red: #e5484d;
-    --green: #46a758;
-    --amber: #f5a524;
-    --radius: 12px;
+    /* broadcast equipment palette — warm charcoal, brass, tally red, VU cream */
+    --bg: #141210;
+    --panel: #1d1a16;
+    --panel-2: #27231d;
+    --border: #38322a;
+    --text: #ece4d4;
+    --muted: #9a9081;
+    --brass: #d9a05b;
+    --brass-glow: rgba(217, 160, 91, 0.28);
+    --tally: #e2483d;
+    --tally-dark: #b93a31;
+    --tally-glow: rgba(226, 72, 61, 0.55);
+    --amber: #f0b04e;
+    --vu-cream: #f4e9d2;
+    --radius: 10px;
+    --font-label: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --font-body: 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    background: radial-gradient(1200px 600px at 50% -10%, #17203a 0%, var(--bg) 60%);
+    font-family: var(--font-body);
+    background:
+      radial-gradient(1100px 550px at 50% -8%, #221d17 0%, var(--bg) 62%);
     color: var(--text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px 16px 48px;
+    padding: 26px 16px 48px;
   }
+
+  /* ---------- header: wordmark + tally lamp ---------- */
   header {
     width: 100%; max-width: 920px;
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 18px;
   }
-  h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.02em; }
-  h1 span { color: var(--muted); font-weight: 400; }
-  .pill {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 12.5px; color: var(--muted);
-    background: var(--panel); border: 1px solid var(--border);
-    padding: 6px 12px; border-radius: 999px;
+  h1 {
+    font-family: var(--font-label);
+    font-size: 24px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
   }
-  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
-  .pill.ok .dot { background: var(--green); }
-  .pill.rec .dot { background: var(--red); animation: pulse 1.2s infinite; }
-  .pill.warn .dot { background: var(--amber); }
+  h1 span {
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 400; letter-spacing: 0.04em;
+    color: var(--muted); text-transform: none;
+    margin-left: 10px;
+  }
+  .pill {
+    display: flex; align-items: center; gap: 9px;
+    font-family: var(--font-label); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.10em; text-transform: uppercase; color: var(--muted);
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 7px 14px; border-radius: 999px;
+  }
+  .pill .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #6b6257;
+    box-shadow: inset 0 -2px 3px rgba(0,0,0,0.5), inset 0 2px 2px rgba(255,255,255,0.25);
+  }
+  .pill.ok { color: var(--brass); }
+  .pill.ok .dot { background: var(--brass); box-shadow: 0 0 10px 2px var(--brass-glow), inset 0 2px 2px rgba(255,255,255,0.45); }
+  .pill.rec { color: var(--tally); }
+  .pill.rec .dot { background: var(--tally); box-shadow: 0 0 12px 3px var(--tally-glow), inset 0 2px 2px rgba(255,255,255,0.45); animation: pulse 1.2s infinite; }
+  .pill.warn { color: var(--amber); }
+  .pill.warn .dot { background: var(--amber); box-shadow: 0 0 10px 2px rgba(240,176,78,0.4), inset 0 2px 2px rgba(255,255,255,0.45); }
 
   main { width: 100%; max-width: 920px; display: flex; flex-direction: column; gap: 14px; }
 
+  /* ---------- the monitor ---------- */
   .stage {
     position: relative;
     background: #000;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border: 1px solid #3a332b;
+    border-radius: 12px;
     overflow: hidden;
     aspect-ratio: 16 / 9;
     display: flex; align-items: center; justify-content: center;
+    box-shadow:
+      inset 0 0 90px rgba(0, 0, 0, 0.55),
+      0 24px 50px -24px rgba(0, 0, 0, 0.7);
   }
   .stage video { width: 100%; height: 100%; object-fit: contain; background: #000; }
   #preview.mirrored { transform: scaleX(-1); }
   .placeholder {
     position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
     color: var(--muted); font-size: 14px; background: var(--panel);
   }
-  .placeholder .big { font-size: 34px; }
+  .big-ic { width: 46px; height: 46px; fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; opacity: 0.7; }
 
+  /* viewfinder corner brackets */
+  .vf-corner { position: absolute; width: 20px; height: 20px; z-index: 3; pointer-events: none; opacity: 0.55; }
+  .vf-corner.tl { top: 10px; left: 10px;  border-top: 2px solid var(--text); border-left: 2px solid var(--text); }
+  .vf-corner.tr { top: 10px; right: 10px; border-top: 2px solid var(--text); border-right: 2px solid var(--text); }
+  .vf-corner.bl { bottom: 10px; left: 10px;  border-bottom: 2px solid var(--text); border-left: 2px solid var(--text); }
+  .vf-corner.br { bottom: 10px; right: 10px; border-bottom: 2px solid var(--text); border-right: 2px solid var(--text); }
+  .stage.review .vf-corner { display: none; }
+
+  /* tally / timecode HUD chip */
   .badge {
     position: absolute; top: 12px; left: 12px; z-index: 5;
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(10, 12, 18, 0.72); backdrop-filter: blur(6px);
-    border: 1px solid rgba(255,255,255,0.08);
-    padding: 6px 12px; border-radius: 8px;
-    font-size: 13px; font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; gap: 9px;
+    background: rgba(18, 15, 12, 0.72); backdrop-filter: blur(6px);
+    border: 1px solid rgba(236, 228, 212, 0.14);
+    padding: 6px 12px; border-radius: 6px;
+    font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums;
   }
-  .badge .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); animation: pulse 1.2s infinite; }
-  .badge.paused .dot { background: var(--amber); animation: none; }
+  .badge .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tally); box-shadow: 0 0 10px 2px var(--tally-glow); animation: pulse 1.2s infinite; }
+  .badge.paused .dot { background: var(--amber); box-shadow: none; animation: none; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
 
   #countdownOverlay {
     position: absolute; inset: 0; z-index: 6;
     display: flex; align-items: center; justify-content: center;
-    font-size: 120px; font-weight: 700; color: #fff;
-    background: rgba(0,0,0,0.35); text-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    font-family: var(--font-label);
+    font-size: 150px; font-weight: 700; color: var(--vu-cream);
+    background: rgba(0, 0, 0, 0.35);
+    text-shadow: 0 0 40px rgba(217, 160, 91, 0.5), 0 4px 24px rgba(0, 0, 0, 0.7);
   }
 
-  /* ---------- Teleprompter overlay ---------- */
+  /* ---------- teleprompter overlay ---------- */
   #prompter {
     position: absolute; top: 3%; left: 50%; transform: translateX(-50%); z-index: 4;
     width: min(780px, 90%); height: 30%;
-    background: linear-gradient(180deg, rgba(8,10,16,0.55) 0%, rgba(8,10,16,0.78) 100%);
-    border: 1px solid rgba(255,255,255,0.10);
+    background: linear-gradient(180deg, rgba(20, 17, 13, 0.55) 0%, rgba(20, 17, 13, 0.8) 100%);
+    border: 1px solid rgba(217, 160, 91, 0.22);
     border-radius: 10px;
     overflow: hidden;
     pointer-events: none;
@@ -100,127 +145,242 @@
   #prompterContent {
     position: relative;
     font-size: 28px; line-height: 1.55; text-align: center;
-    color: #cfd6e4;
+    color: #cfc6b6;
     transition: transform 0.22s ease-out;
   }
-  #prompterContent .said { color: rgba(207,214,228,0.32); }
+  #prompterContent .said { color: rgba(207, 198, 182, 0.32); }
   #prompterContent .said.last {
-    color: rgba(207,214,228,0.62);
+    color: rgba(236, 228, 212, 0.75);
     text-decoration: underline;
-    text-decoration-color: var(--accent);
+    text-decoration-color: var(--brass);
     text-decoration-thickness: 2px;
     text-underline-offset: 5px;
   }
   #prompterContent .next {
-    color: #fff; font-weight: 650;
-    background: rgba(79,140,255,0.30);
+    color: #fff; font-weight: 600;
+    background: rgba(217, 160, 91, 0.30);
     border-radius: 5px;
   }
   #prompterContent .hint { color: var(--muted); font-size: 15px; }
 
+  /* ---------- analog VU meter (the signature) ---------- */
+  .vu {
+    position: absolute; left: 12px; bottom: 12px; z-index: 4;
+    width: 118px; height: 64px;
+    background: rgba(33, 29, 24, 0.94);
+    border: 1px solid #3a332b; border-radius: 6px;
+    padding: 6px 8px 5px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+  }
+  .vu-face {
+    position: relative; width: 100%; height: 100%;
+    background: linear-gradient(180deg, #f7ecd8 0%, #eeddbe 100%);
+    border-radius: 3px; overflow: hidden;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -8px 14px rgba(120, 90, 40, 0.18);
+  }
+  .vu-ticks {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(100deg, transparent 68%, rgba(185, 52, 38, 0.22) 69%),
+      repeating-conic-gradient(from -55deg at 50% 100%, rgba(29, 26, 22, 0.85) 0deg 0.5deg, transparent 0.5deg 11deg);
+  }
+  .vu-needle {
+    position: absolute; left: 50%; bottom: 2px;
+    width: 1.6px; height: 46px; margin-left: -0.8px;
+    background: #b0342c;
+    box-shadow: 0 0 2px rgba(176, 52, 44, 0.6);
+    transform-origin: 50% 100%;
+    transform: rotate(-55deg);
+  }
+  .vu-brand {
+    position: absolute; right: 4px; bottom: 1px;
+    font-family: var(--font-label); font-size: 8px; font-weight: 600;
+    letter-spacing: 0.2em; color: rgba(29, 26, 22, 0.55);
+  }
+
+  /* ---------- info + transport ---------- */
   .infobar {
     display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-    font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
     padding: 0 2px;
   }
 
   .controls { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
   button {
-    font: inherit; color: var(--text);
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--font-label); font-weight: 600;
+    font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text);
     background: var(--panel-2); border: 1px solid var(--border);
-    padding: 10px 18px; border-radius: 10px; cursor: pointer;
-    font-size: 14px; font-weight: 550;
-    transition: transform 0.06s ease, background 0.15s ease, border-color 0.15s ease;
+    padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    transition: transform 0.06s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  button:hover { background: #222b3f; border-color: #3a4763; }
+  button:hover { background: #312b23; border-color: #4a4234; }
   button:active { transform: scale(0.97); }
-  button.primary {
-    background: var(--red); border-color: var(--red); color: #fff;
-    padding: 12px 26px; font-size: 15px; border-radius: 999px;
+  button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--brass); outline-offset: 1px;
   }
-  button.primary:hover { background: #f2555a; border-color: #f2555a; }
-  button.success { background: var(--green); border-color: var(--green); color: #fff; }
-  button.success:hover { background: #52b964; border-color: #52b964; }
-  button.ghost { background: transparent; }
+  button.primary {
+    background: var(--tally); border-color: var(--tally-dark); color: #fff;
+    padding: 13px 32px; font-size: 17px; letter-spacing: 0.12em; border-radius: 999px;
+    box-shadow: 0 0 0 3px rgba(226, 72, 61, 0.16), 0 8px 20px -8px var(--tally-glow);
+  }
+  button.primary:hover { background: #ee554a; border-color: var(--tally); box-shadow: 0 0 0 3px rgba(226, 72, 61, 0.24), 0 8px 24px -6px var(--tally-glow); }
+  button.primary.counting .ic-rec { display: none; }
+  button.success {
+    background: var(--brass); border-color: #b5824a; color: #1d1a16;
+    box-shadow: 0 8px 20px -10px var(--brass-glow);
+  }
+  button.success:hover { background: #e4ae6c; border-color: var(--brass); }
+  button.ghost { background: transparent; color: var(--muted); }
+  button.ghost:hover { color: var(--text); }
+
+  /* inline icons */
+  .ic { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  #btnPause .ic-play { display: none; }
+  #btnPause.paused .ic-play { display: inline; }
+  #btnPause.paused .ic-pause { display: none; }
+  #btnMuteToggle .ic-micoff { display: none; }
+  #btnMuteToggle.active .ic-mic { display: none; }
+  #btnMuteToggle.active .ic-micoff { display: inline; }
+
+  /* ---------- quick controls row ---------- */
+  .quickrow { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .segmented {
+    display: inline-flex; overflow: hidden;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--panel);
+  }
+  .seg {
+    border: none; border-radius: 0; background: transparent;
+    color: var(--muted); padding: 9px 16px;
+  }
+  .seg + .seg { border-left: 1px solid var(--border); }
+  .seg:hover { background: var(--panel-2); color: var(--text); }
+  .seg.active { background: var(--panel-2); color: var(--brass); box-shadow: inset 0 0 0 1px rgba(217,160,91,0.35); }
+  .qsep { width: 1px; height: 22px; background: var(--border); }
+  .qbtn {
+    padding: 9px 11px; border-radius: 8px;
+    color: var(--muted); background: var(--panel);
+  }
+  .qbtn:hover { color: var(--text); }
+  .qbtn.active { color: var(--brass); border-color: rgba(217,160,91,0.5); background: rgba(217,160,91,0.08); }
+
   .hint { font-size: 12px; color: var(--muted); text-align: center; }
   kbd {
-    font: 11px ui-monospace, monospace; background: var(--panel-2);
+    font: 11px var(--font-mono); background: var(--panel-2);
     border: 1px solid var(--border); border-bottom-width: 2px;
     border-radius: 5px; padding: 2px 6px;
   }
 
-  fieldset {
+  /* ---------- disclosure panels (progressive complexity) ---------- */
+  details {
     border: 1px solid var(--border); border-radius: var(--radius);
     background: var(--panel);
-    padding: 14px 16px;
+  }
+  summary {
+    list-style: none;
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 16px; cursor: pointer; user-select: none;
+    font-family: var(--font-label); font-size: 14px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.14em; color: var(--brass);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: #e4ae6c; }
+  .chev { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.18s ease; }
+  details[open] .chev { transform: rotate(180deg); }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+
+  fieldset, .panel-grid {
+    border: none;
+    padding: 16px 16px 14px;
     display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 14px 18px;
   }
+  fieldset { min-width: 0; margin: 0; }
   fieldset:disabled { opacity: 0.45; pointer-events: none; }
-  fieldset legend {
-    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--muted); padding: 0 6px;
-  }
   .field { display: flex; flex-direction: column; gap: 6px; }
-  .field > label { font-size: 12.5px; color: var(--muted); }
+  .field > label {
+    font-family: var(--font-mono); font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
+  }
   .field.full { grid-column: 1 / -1; }
   select, textarea, input[type="number"], input[type="text"] {
-    font: inherit; font-size: 13.5px; color: var(--text);
-    background: var(--panel-2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 10px; width: 100%;
+    font-family: var(--font-body); font-size: 13.5px; color: var(--text);
+    background: #221e19; border: 1px solid var(--border);
+    border-radius: 7px; padding: 8px 10px; width: 100%;
   }
   textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
   input[type="number"] { width: 90px; }
-  input[type="range"] { accent-color: var(--accent); }
+  input[type="range"] { accent-color: var(--brass); }
   .check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text); }
-  .check input { accent-color: var(--accent); width: 15px; height: 15px; }
-  .subtle { font-size: 12.5px; color: var(--muted); }
+  .check input { accent-color: var(--brass); width: 15px; height: 15px; }
+  .check label { font-family: var(--font-body); text-transform: none; letter-spacing: 0; color: var(--text); font-size: 13.5px; }
+  .subtle { font-size: 12.5px; color: var(--muted); text-transform: none; letter-spacing: 0; }
 
   .meter-wrap { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; }
-  .meter-wrap > label { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
-  .meter {
-    flex: 1; height: 8px; border-radius: 999px;
-    background: var(--panel-2); border: 1px solid var(--border); overflow: hidden;
-  }
-  .meter > div {
-    height: 100%; width: 0%;
-    background: linear-gradient(90deg, var(--green) 0%, var(--amber) 70%, var(--red) 100%);
-    transition: width 0.08s linear;
+  .meter-wrap > label {
+    font-family: var(--font-mono); font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); white-space: nowrap;
   }
 
   #errorBox {
     display: none;
-    border: 1px solid #7a2e31; background: #2a1416; color: #f0b9bb;
+    border: 1px solid #7a3a30; background: #2b1712; color: #f0c2b8;
     border-radius: var(--radius); padding: 14px 16px; font-size: 13.5px; line-height: 1.55;
   }
   #errorBox.visible { display: block; }
-  #errorBox code { background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
-  #errorBox .close { float: right; background: none; border: none; color: #f0b9bb; font-size: 16px; padding: 0 4px; }
+  #errorBox code { background: rgba(255, 255, 255, 0.08); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+  #errorBox .close { float: right; background: none; border: none; color: #f0c2b8; font-size: 16px; padding: 0 4px; }
 
-  footer { max-width: 920px; width: 100%; margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  footer { max-width: 920px; width: 100%; margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.65; }
+  footer strong { color: #c9bfa9; font-weight: 600; }
 
   .hidden { display: none !important; }
+
+  @media (max-width: 560px) {
+    h1 { font-size: 19px; }
+    h1 span { display: none; }
+    #countdownOverlay { font-size: 96px; }
+    .vu { transform: scale(0.85); transform-origin: bottom left; }
+    .quickrow { flex-wrap: wrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pill.rec .dot, .badge .dot { animation: none; }
+    #prompterContent, .chev { transition: none; }
+    button { transition: none; }
+  }
 </style>
 </head>
 <body>
-
 <header>
-  <h1>Webcam Studio <span>— high quality clips</span></h1>
+  <h1>Webcam Studio <span>// recording cockpit</span></h1>
   <div id="statusPill" class="pill"><span class="dot"></span><span id="statusText">Starting…</span></div>
 </header>
 
 <main>
   <div id="errorBox"><button class="close" id="btnErrorClose">✕</button><span id="errorText"></span></div>
 
-  <div class="stage">
+  <div class="stage" id="stage">
     <video id="preview" class="mirrored" autoplay playsinline muted></video>
     <video id="playback" class="hidden" controls playsinline></video>
     <div id="placeholder" class="placeholder hidden">
-      <div class="big">📷</div>
+      <svg class="big-ic" viewBox="0 0 24 24"><rect x="2" y="6" width="13" height="12" rx="2"/><path d="M15 10.5l7-3.5v10l-7-3.5"/></svg>
       <div>No video source</div>
     </div>
+    <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
+    <div class="vf-corner bl"></div><div class="vf-corner br"></div>
     <div id="prompter" class="hidden">
       <div id="prompterInner"><div id="prompterContent"></div></div>
+    </div>
+    <div class="vu" title="Mic level">
+      <div class="vu-face">
+        <div class="vu-ticks"></div>
+        <div id="micLevel" class="vu-needle"></div>
+        <div class="vu-brand">VU</div>
+      </div>
     </div>
     <div id="recBadge" class="badge hidden"><span class="dot"></span><span id="recTime">00:00</span><span id="recSize"></span></div>
     <div id="countdownOverlay" class="hidden">3</div>
@@ -231,164 +391,189 @@
     <span id="codecInfo"></span>
   </div>
 
-  <div class="controls">
-    <button id="btnRecord" class="primary">● Record</button>
-    <button id="btnPause" class="hidden">⏸ Pause</button>
-    <button id="btnStop" class="hidden">■ Stop</button>
-    <button id="btnDownload" class="success hidden">⬇ Download clip</button>
-    <button id="btnDiscard" class="ghost hidden">↺ Re-record</button>
+  <div class="controls deck">
+    <button id="btnRecord" class="primary">
+      <svg class="ic ic-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="currentColor" stroke="none"/></svg><span id="btnRecordLabel" class="lbl">Record</span>
+    </button>
+    <button id="btnPause" class="hidden">
+      <svg class="ic ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/></svg><svg class="ic ic-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="currentColor" stroke="none"/></svg><span id="btnPauseLabel" class="lbl">Pause</span>
+    </button>
+    <button id="btnStop" class="hidden">
+      <svg class="ic" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor" stroke="none"/></svg><span class="lbl">Stop</span>
+    </button>
+    <button id="btnDownload" class="success hidden">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg><span class="lbl">Download clip</span>
+    </button>
+    <button id="btnDiscard" class="ghost hidden">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg><span class="lbl">Re-record</span>
+    </button>
   </div>
-  <div class="hint">Tip: <kbd>Space</kbd> starts / stops recording · <kbd>↑</kbd><kbd>↓</kbd> adjust prompter pace live</div>
 
-  <fieldset id="settings">
-    <legend>Capture</legend>
-
-    <div class="field">
-      <label for="sourceSelect">Source</label>
-      <select id="sourceSelect">
-        <option value="webcam" selected>Webcam</option>
-        <option value="screen">Screen share</option>
-      </select>
+  <div class="quickrow" role="group" aria-label="Quick controls">
+    <div class="segmented" role="radiogroup" aria-label="Source">
+      <button id="btnSrcWebcam" class="seg active" role="radio" aria-checked="true" title="Webcam">
+        <svg class="ic" viewBox="0 0 24 24"><rect x="2" y="6" width="13" height="12" rx="2"/><path d="M15 10.5l7-3.5v10l-7-3.5"/></svg>
+      </button>
+      <button id="btnSrcScreen" class="seg" role="radio" aria-checked="false" title="Screen share">
+        <svg class="ic" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </button>
     </div>
+    <span class="qsep"></span>
+    <button id="btnMuteToggle" class="qbtn" title="Mute microphone" aria-pressed="false">
+      <svg class="ic ic-mic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/></svg><svg class="ic ic-micoff" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+    </button>
+    <button id="btnPrompterToggle" class="qbtn" title="Teleprompter" aria-pressed="false">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+    </button>
+    <button id="btnSettingsToggle" class="qbtn" title="Capture settings">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+  <div class="hint"><kbd>Space</kbd> record / stop · <kbd>↑</kbd><kbd>↓</kbd> prompter pace</div>
 
-    <div class="field hidden" id="screenOptsField">
-      <label>Screen options</label>
-      <div class="check"><input type="checkbox" id="webcamOverlayCheck" checked><label for="webcamOverlayCheck">Include webcam overlay</label></div>
-      <div class="check"><input type="checkbox" id="shareAudioCheck" checked><label for="shareAudioCheck">Include screen/tab audio</label></div>
+  <details id="prompterDetails">
+    <summary><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>Teleprompter</summary>
+    <div class="panel-grid" id="prompterSettings">
+      <div class="field">
+        <label>&nbsp;</label>
+        <div class="check"><input type="checkbox" id="prompterEnable"><label for="prompterEnable">Enable overlay</label></div>
+      </div>
+
+      <div class="field">
+        <label for="followMode">Follow mode</label>
+        <select id="followMode">
+          <option value="speech" selected>Follow my speech</option>
+          <option value="timed">Timed scroll</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label for="prompterScript">Script <span class="subtle">(saved automatically in this browser)</span></label>
+        <textarea id="prompterScript" rows="4" placeholder="Paste or type your script here…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="highlightWords">Highlight next words</label>
+        <input type="number" id="highlightWords" min="1" max="20" value="5">
+      </div>
+
+      <div class="field">
+        <label for="prompterFont">Font size · <span id="prompterFontVal">28</span>px</label>
+        <input type="range" id="prompterFont" min="18" max="44" value="28">
+      </div>
+
+      <div class="field">
+        <label for="scrollWpm">Scroll pace · <span id="scrollWpmVal">130</span> wpm</label>
+        <input type="range" id="scrollWpm" min="60" max="220" value="130">
+      </div>
+
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="btnPrompterReset" class="ghost">↺ Reset to top</button>
+      </div>
+
+      <div class="meter-wrap">
+        <label>Status</label>
+        <span id="prompterStatus" class="subtle">Off — enable to follow your speech</span>
+      </div>
     </div>
+  </details>
 
-    <div class="field hidden" id="pipField">
-      <label for="pipCorner">Webcam overlay corner</label>
-      <select id="pipCorner">
-        <option value="br" selected>Bottom right</option>
-        <option value="bl">Bottom left</option>
-        <option value="tr">Top right</option>
-        <option value="tl">Top left</option>
-      </select>
-    </div>
+  <details id="settingsDetails">
+    <summary><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>Capture settings</summary>
+    <fieldset id="settings">
+      <div class="field">
+        <label for="sourceSelect">Source</label>
+        <select id="sourceSelect">
+          <option value="webcam" selected>Webcam</option>
+          <option value="screen">Screen share</option>
+        </select>
+      </div>
 
-    <div class="field">
-      <label for="cameraSelect">Camera</label>
-      <select id="cameraSelect"></select>
-    </div>
+      <div class="field hidden" id="screenOptsField">
+        <label>Screen options</label>
+        <div class="check"><input type="checkbox" id="webcamOverlayCheck" checked><label for="webcamOverlayCheck">Include webcam overlay</label></div>
+        <div class="check"><input type="checkbox" id="shareAudioCheck" checked><label for="shareAudioCheck">Include screen/tab audio</label></div>
+      </div>
 
-    <div class="field">
-      <label for="micSelect">Microphone</label>
-      <select id="micSelect"></select>
-    </div>
+      <div class="field hidden" id="pipField">
+        <label for="pipCorner">Webcam overlay corner</label>
+        <select id="pipCorner">
+          <option value="br" selected>Bottom right</option>
+          <option value="bl">Bottom left</option>
+          <option value="tr">Top right</option>
+          <option value="tl">Top left</option>
+        </select>
+      </div>
 
-    <div class="field">
-      <label for="resolutionSelect">Resolution <span class="subtle">(webcam)</span></label>
-      <select id="resolutionSelect">
-        <option value="720p">1280×720 (HD)</option>
-        <option value="1080p" selected>1920×1080 (Full HD)</option>
-        <option value="4k">3840×2160 (4K, if supported)</option>
-      </select>
-    </div>
+      <div class="field">
+        <label for="cameraSelect">Camera</label>
+        <select id="cameraSelect"></select>
+      </div>
 
-    <div class="field">
-      <label for="fpsSelect">Frame rate</label>
-      <select id="fpsSelect">
-        <option value="24">24 fps (cinematic)</option>
-        <option value="30" selected>30 fps</option>
-        <option value="60">60 fps (smooth)</option>
-      </select>
-    </div>
+      <div class="field">
+        <label for="micSelect">Microphone</label>
+        <select id="micSelect"></select>
+      </div>
 
-    <div class="field">
-      <label for="qualitySelect">Quality (bitrate)</label>
-      <select id="qualitySelect">
-        <option value="standard">Standard · ~8 Mbps</option>
-        <option value="high" selected>High · ~14 Mbps</option>
-        <option value="ultra">Ultra · ~24 Mbps</option>
-      </select>
-    </div>
+      <div class="field">
+        <label for="resolutionSelect">Resolution <span class="subtle">(webcam)</span></label>
+        <select id="resolutionSelect">
+          <option value="720p">1280×720 (HD)</option>
+          <option value="1080p" selected>1920×1080 (Full HD)</option>
+          <option value="4k">3840×2160 (4K, if supported)</option>
+        </select>
+      </div>
 
-    <div class="field">
-      <label for="countdownSelect">Countdown</label>
-      <select id="countdownSelect">
-        <option value="0">Off</option>
-        <option value="3" selected>3 seconds</option>
-        <option value="5">5 seconds</option>
-        <option value="10">10 seconds</option>
-      </select>
-    </div>
+      <div class="field">
+        <label for="fpsSelect">Frame rate</label>
+        <select id="fpsSelect">
+          <option value="24">24 fps (cinematic)</option>
+          <option value="30" selected>30 fps</option>
+          <option value="60">60 fps (smooth)</option>
+        </select>
+      </div>
 
-    <div class="field full">
-      <label for="watermarkInput" id="watermarkLabel">Watermark <span class="subtle">(burned into the recording across the bottom — leave empty for none)</span></label>
-      <input type="text" id="watermarkInput" maxlength="200" spellcheck="false" readonly>
-    </div>
+      <div class="field">
+        <label for="qualitySelect">Quality (bitrate)</label>
+        <select id="qualitySelect">
+          <option value="standard">Standard · ~8 Mbps</option>
+          <option value="high" selected>High · ~14 Mbps</option>
+          <option value="ultra">Ultra · ~24 Mbps</option>
+        </select>
+      </div>
 
-    <div class="field">
-      <label>Options</label>
-      <div class="check"><input type="checkbox" id="mirrorCheck" checked><label for="mirrorCheck">Mirror preview</label></div>
-      <div class="check"><input type="checkbox" id="muteCheck"><label for="muteCheck">Mute microphone</label></div>
-    </div>
+      <div class="field">
+        <label for="countdownSelect">Countdown</label>
+        <select id="countdownSelect">
+          <option value="0">Off</option>
+          <option value="3" selected>3 seconds</option>
+          <option value="5">5 seconds</option>
+          <option value="10">10 seconds</option>
+        </select>
+      </div>
 
-    <div class="field">
-      <label>&nbsp;</label>
-      <button id="btnCamToggle" class="ghost">Turn camera off</button>
-    </div>
+      <div class="field full">
+        <label for="watermarkInput" id="watermarkLabel">Watermark <span class="subtle">(burned into the recording — leave empty for none)</span></label>
+        <input type="text" id="watermarkInput" maxlength="200" spellcheck="false" readonly>
+      </div>
 
-    <div class="meter-wrap">
-      <label>Mic level</label>
-      <div class="meter"><div id="micLevel"></div></div>
-    </div>
-  </fieldset>
+      <div class="field">
+        <label>Options</label>
+        <div class="check"><input type="checkbox" id="mirrorCheck" checked><label for="mirrorCheck">Mirror preview</label></div>
+      </div>
 
-  <fieldset id="prompterSettings">
-    <legend>Teleprompter</legend>
-
-    <div class="field">
-      <label>&nbsp;</label>
-      <div class="check"><input type="checkbox" id="prompterEnable"><label for="prompterEnable">Enable teleprompter overlay</label></div>
-    </div>
-
-    <div class="field">
-      <label for="followMode">Follow mode</label>
-      <select id="followMode">
-        <option value="speech" selected>Follow my speech</option>
-        <option value="timed">Timed scroll</option>
-      </select>
-    </div>
-
-    <div class="field full">
-      <label for="prompterScript">Script <span class="subtle">(saved automatically in this browser)</span></label>
-      <textarea id="prompterScript" rows="4" placeholder="Paste or type your script here…"></textarea>
-    </div>
-
-    <div class="field">
-      <label for="highlightWords">Highlight next words</label>
-      <input type="number" id="highlightWords" min="1" max="20" value="5">
-    </div>
-
-    <div class="field">
-      <label for="prompterFont">Font size · <span id="prompterFontVal">28</span>px</label>
-      <input type="range" id="prompterFont" min="18" max="44" value="28">
-    </div>
-
-    <div class="field">
-      <label for="scrollWpm">Scroll pace · <span id="scrollWpmVal">130</span> wpm <span class="subtle">(live-adjustable)</span></label>
-      <input type="range" id="scrollWpm" min="60" max="220" value="130">
-    </div>
-
-    <div class="field">
-      <label>&nbsp;</label>
-      <button id="btnPrompterReset" class="ghost">↺ Reset to top</button>
-    </div>
-
-    <div class="meter-wrap">
-      <label>Status</label>
-      <span id="prompterStatus" class="subtle">Off — enable to follow your speech</span>
-    </div>
-  </fieldset>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="btnCamToggle" class="ghost">Turn camera off</button>
+      </div>
+    </fieldset>
+  </details>
 
   <footer>
-    Record screen or webcam (or screen with a webcam overlay) as <strong>MP4 (H.264/AAC)</strong> where supported,
-    otherwise <strong>WebM (VP9/Opus)</strong>. The teleprompter overlay is never baked into webcam recordings —
-    but if you share the screen/window showing this app, whatever is on that screen will be captured.
-    Speech-follow uses your browser's speech recognition (internet required on Chrome); other browsers get timed
-    scrolling. Settings and script persist in localStorage. Nothing is uploaded — everything stays on this machine.
+    Records <strong>MP4 (H.264/AAC)</strong> where supported, else <strong>WebM</strong>. The prompter is never
+    baked into webcam recordings — but sharing the screen that shows this app captures whatever is on it.
+    Settings and script persist locally. Nothing is uploaded.
   </footer>
 </main>
 
@@ -398,15 +583,21 @@
 // ---------- DOM ----------
 const $ = id => document.getElementById(id);
 const els = {
+  stage: $('stage'),
   preview: $('preview'), playback: $('playback'), placeholder: $('placeholder'),
   prompter: $('prompter'), prompterInner: $('prompterInner'), prompterContent: $('prompterContent'),
   recBadge: $('recBadge'), recTime: $('recTime'), recSize: $('recSize'),
   countdownOverlay: $('countdownOverlay'),
   statusPill: $('statusPill'), statusText: $('statusText'),
   cameraInfo: $('cameraInfo'), codecInfo: $('codecInfo'),
-  btnRecord: $('btnRecord'), btnPause: $('btnPause'), btnStop: $('btnStop'),
+  btnRecord: $('btnRecord'), btnRecordLabel: $('btnRecordLabel'),
+  btnPause: $('btnPause'), btnPauseLabel: $('btnPauseLabel'), btnStop: $('btnStop'),
   btnDownload: $('btnDownload'), btnDiscard: $('btnDiscard'),
   btnCamToggle: $('btnCamToggle'),
+  btnSrcWebcam: $('btnSrcWebcam'), btnSrcScreen: $('btnSrcScreen'),
+  btnMuteToggle: $('btnMuteToggle'), btnPrompterToggle: $('btnPrompterToggle'),
+  btnSettingsToggle: $('btnSettingsToggle'),
+  prompterDetails: $('prompterDetails'), settingsDetails: $('settingsDetails'),
   settings: $('settings'), prompterSettings: $('prompterSettings'),
   sourceSelect: $('sourceSelect'),
   screenOptsField: $('screenOptsField'), pipField: $('pipField'),
@@ -415,7 +606,7 @@ const els = {
   resolutionSelect: $('resolutionSelect'), fpsSelect: $('fpsSelect'),
   qualitySelect: $('qualitySelect'), countdownSelect: $('countdownSelect'),
   watermarkInput: $('watermarkInput'), watermarkLabel: $('watermarkLabel'),
-  mirrorCheck: $('mirrorCheck'), muteCheck: $('muteCheck'),
+  mirrorCheck: $('mirrorCheck'),
   micLevel: $('micLevel'),
   prompterEnable: $('prompterEnable'), prompterScript: $('prompterScript'), followMode: $('followMode'),
   highlightWords: $('highlightWords'), prompterFont: $('prompterFont'), prompterFontVal: $('prompterFontVal'),
@@ -462,8 +653,11 @@ let mixCtx = null;
 // timer
 let tAccum = 0, tLast = 0, timerIv = null;
 
-// audio meter
-let meterCtx = null, meterRAF = 0;
+// audio meter (VU needle)
+let meterCtx = null, meterRAF = 0, vuAngle = -55;
+
+// quick-toggle state (canonical home for mic mute — mirrored to the icon button)
+let micMuted = false;
 
 // teleprompter — two cursors:
 //   confirmedIndex = grey "said" boundary (advances only on strong final matches)
@@ -524,7 +718,7 @@ function saveSettings() {
     resolution: els.resolutionSelect.value, fps: els.fpsSelect.value,
     quality: els.qualitySelect.value, countdown: els.countdownSelect.value,
     watermark: els.watermarkInput.value,
-    mirror: els.mirrorCheck.checked, mute: els.muteCheck.checked,
+    mirror: els.mirrorCheck.checked, mute: micMuted,
     webcamOverlay: els.webcamOverlayCheck.checked, shareAudio: els.shareAudioCheck.checked,
     pipCorner: els.pipCorner.value,
     prompterOn: els.prompterEnable.checked, script: els.prompterScript.value,
@@ -545,7 +739,7 @@ function applySettings(s) {
   if (s.countdown != null) els.countdownSelect.value = String(s.countdown);
   if (s.watermark != null) els.watermarkInput.value = s.watermark;
   if (s.mirror != null) els.mirrorCheck.checked = !!s.mirror;
-  if (s.mute != null) els.muteCheck.checked = !!s.mute;
+  if (s.mute != null) micMuted = !!s.mute;
   if (s.webcamOverlay != null) els.webcamOverlayCheck.checked = !!s.webcamOverlay;
   if (s.shareAudio != null) els.shareAudioCheck.checked = !!s.shareAudio;
   if (s.pipCorner) els.pipCorner.value = s.pipCorner;
@@ -566,16 +760,19 @@ function setState(s) {
   const review    = s === 'review';
 
   els.btnRecord.classList.toggle('hidden', rec || paused || review);
-  els.btnRecord.textContent = counting ? 'Cancel' : '● Record';
+  els.btnRecordLabel.textContent = counting ? 'Cancel' : 'Record';
+  els.btnRecord.classList.toggle('counting', counting);
   els.btnStop.classList.toggle('hidden', !(rec || paused));
   els.btnPause.classList.toggle('hidden', !(rec || paused));
-  els.btnPause.textContent = paused ? '▶ Resume' : '⏸ Pause';
+  els.btnPauseLabel.textContent = paused ? 'Resume' : 'Pause';
+  els.btnPause.classList.toggle('paused', paused);
   els.btnDownload.classList.toggle('hidden', !review);
   els.btnDiscard.classList.toggle('hidden', !review);
   els.recBadge.classList.toggle('hidden', !(rec || paused));
   els.recBadge.classList.toggle('paused', paused);
   els.playback.classList.toggle('hidden', !review);
   els.preview.classList.toggle('hidden', review);
+  els.stage.classList.toggle('review', review);
   els.settings.disabled = counting || rec || paused;
   // only the script is locked while rolling — pace, font size, highlight count
   // and follow mode stay live-adjustable mid-recording
@@ -641,7 +838,8 @@ function stopAudio() {
   micStream = null;
   if (meterRAF) cancelAnimationFrame(meterRAF);
   if (meterCtx) { meterCtx.close().catch(() => {}); meterCtx = null; }
-  els.micLevel.style.width = '0%';
+  vuAngle = -55;
+  els.micLevel.style.transform = 'rotate(-55deg)';
 }
 
 async function startDevices() {
@@ -713,7 +911,7 @@ function fillSelect(sel, devices, fallback) {
   if ([...sel.options].some(o => o.value === current)) sel.value = current;
 }
 
-// ---------- Mic level meter ----------
+// ---------- Mic level meter (analog VU needle) ----------
 function setupMeter() {
   if (!micStream || !micStream.getAudioTracks().length) return;
   try {
@@ -730,7 +928,10 @@ function setupMeter() {
         const v = Math.abs(data[i] - 128) / 128;
         if (v > peak) peak = v;
       }
-      els.micLevel.style.width = Math.min(100, peak * 150) + '%';
+      // sweep -55° (silence) to +55° (full scale); fast attack, slow decay — like a real needle
+      const target = -55 + Math.min(1, peak * 1.6) * 110;
+      vuAngle += (target - vuAngle) * (target > vuAngle ? 0.5 : 0.12);
+      els.micLevel.style.transform = `rotate(${vuAngle.toFixed(1)}deg)`;
       meterRAF = requestAnimationFrame(loop);
     };
     loop();
@@ -738,7 +939,7 @@ function setupMeter() {
 }
 function applyMute() {
   if (!micStream) return;
-  micStream.getAudioTracks().forEach(t => { t.enabled = !els.muteCheck.checked; });
+  micStream.getAudioTracks().forEach(t => { t.enabled = !micMuted; });
 }
 
 // ---------- Screen share ----------
@@ -756,6 +957,7 @@ async function enterScreenMode() {
     return;
   }
   mode = 'screen';
+  syncQuickUI();
   screenStream.getVideoTracks()[0].addEventListener('ended', onScreenEnded);
   if (els.webcamOverlayCheck.checked && !camStream) await startVideo();
   updateModeUI();
@@ -768,6 +970,7 @@ function onScreenEnded() {
 }
 function exitScreenMode() {
   mode = 'webcam';
+  syncQuickUI();
   els.sourceSelect.value = 'webcam';
   if (screenStream) { screenStream.getTracks().forEach(t => t.stop()); screenStream = null; }
   stopCompositor();
@@ -781,6 +984,18 @@ function updateModeUI() {
   els.screenOptsField.classList.toggle('hidden', !scr);
   els.pipField.classList.toggle('hidden', !(scr && els.webcamOverlayCheck.checked));
   els.resolutionSelect.disabled = scr;                    // screen uses its native resolution
+}
+
+// reflect mode/mute/prompter state onto the quick-row icon buttons
+function syncQuickUI() {
+  els.btnSrcWebcam.classList.toggle('active', mode === 'webcam');
+  els.btnSrcScreen.classList.toggle('active', mode === 'screen');
+  els.btnSrcWebcam.setAttribute('aria-checked', String(mode === 'webcam'));
+  els.btnSrcScreen.setAttribute('aria-checked', String(mode === 'screen'));
+  els.btnMuteToggle.classList.toggle('active', micMuted);
+  els.btnMuteToggle.setAttribute('aria-pressed', String(micMuted));
+  els.btnPrompterToggle.classList.toggle('active', prompterOn);
+  els.btnPrompterToggle.setAttribute('aria-pressed', String(prompterOn));
 }
 
 // ---------- Preview pipeline ----------
@@ -1433,7 +1648,27 @@ els.shareAudioCheck.onchange = () => {
 };
 els.pipCorner.onchange = () => { saveSettings(); /* takes effect on next frame automatically */ };
 els.mirrorCheck.onchange = () => { saveSettings(); els.preview.classList.toggle('mirrored', mode === 'webcam' && els.mirrorCheck.checked); };
-els.muteCheck.onchange = () => { saveSettings(); applyMute(); };
+// quick-row icon toggles — proxies to the canonical settings inputs, so
+// persistence and all existing handlers keep working unchanged
+els.btnSrcWebcam.onclick = () => {
+  if (state === 'countdown' || state === 'recording' || state === 'paused') return;
+  if (mode !== 'webcam') { els.sourceSelect.value = 'webcam'; els.sourceSelect.onchange(); }
+};
+els.btnSrcScreen.onclick = () => {
+  if (state === 'countdown' || state === 'recording' || state === 'paused') return;
+  if (mode !== 'screen') { els.sourceSelect.value = 'screen'; els.sourceSelect.onchange(); }
+};
+els.btnMuteToggle.onclick = () => {
+  micMuted = !micMuted;
+  applyMute(); saveSettings(); syncQuickUI();
+};
+els.btnPrompterToggle.onclick = () => {
+  els.prompterEnable.checked = !els.prompterEnable.checked;
+  els.prompterEnable.onchange();
+  // enabling with no script yet → open the panel so the next step is obvious
+  if (prompterOn && !els.prompterScript.value.trim()) els.prompterDetails.open = true;
+};
+els.btnSettingsToggle.onclick = () => { els.settingsDetails.open = !els.settingsDetails.open; };
 els.cameraSelect.onchange = () => { saveSettings(); if (state === 'idle') startVideo(); };
 els.micSelect.onchange    = () => { saveSettings(); if (state === 'idle') startAudio(); };
 els.resolutionSelect.onchange = () => { saveSettings(); if (state === 'idle' && mode === 'webcam') startVideo(); };
@@ -1460,6 +1695,7 @@ els.prompterEnable.onchange = () => {
   saveSettings();
   if (els.prompterEnable.checked) enablePrompter();
   else disablePrompter();
+  syncQuickUI();
 };
 let scriptSaveTimer = null;
 els.prompterScript.oninput = () => {
@@ -1546,8 +1782,10 @@ window.addEventListener('beforeunload', e => {
   els.scrollWpmVal.textContent = els.scrollWpm.value;
   highlightN = Math.max(1, Math.min(20, Number(els.highlightWords.value) || 5));
 
-  if (els.prompterEnable.checked) enablePrompter();
+  if (els.prompterEnable.checked) { els.prompterDetails.open = true; enablePrompter(); }
+  else if (els.prompterScript.value.trim()) els.prompterDetails.open = true;
   updateModeUI();
+  syncQuickUI();
   startDevices();   // always boots in webcam mode; screen share needs a fresh user pick
 })();
 </script>

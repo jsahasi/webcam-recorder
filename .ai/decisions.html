@@ -125,5 +125,29 @@ hover-cursor hint.</p>
   <li><strong>Dual license</strong> in <code>LICENSE</code>: (A) Free Attribution License — MIT-style permissions conditioned on retaining the copyright notice, the watermark feature, and its default attribution text in all copies/deployments/recordings, plus no-sale; (B) paid Commercial License waiving those conditions. No OSI-approved license supports payment-conditional attribution, so clause (A)(2) is a custom source-available restriction; the software is not "open source" in the OSI sense under this model.</li>
   <li><strong>Stealth edit affordance.</strong> The watermark input is <code>readonly</code> by default; clicking the <em>label</em> removes the attribute (native label behaviour then focuses the field — no custom cursor styling anywhere, so nothing hints at clickability). Re-locks on reload. Documented in README, since a license-required control must still be discoverable by legitimate users.</li>
 </ul>
+
+<h1>ADR-006 — UI refactor: broadcast-equipment language + progressive disclosure</h1>
+<p class="meta">Date: 2026-07-17 · Status: Accepted · Method: frontend-design skill (subject grounding → token system → anti-default critique)</p>
+
+<h2>Context</h2>
+<p>Requested: refactor and clean up the UI. Explicit user steer: <em>"not just colors — icons,
+grouping things intuitively, hiding complexity, keeping it simple."</em> The v1 UI was two always-visible
+fieldsets (~19 controls) plus unicode-glyph buttons: a wall of settings for a task whose core loop is
+<em>see yourself → record → stop → download</em>.</p>
+
+<h2>Decisions</h2>
+<ul>
+  <li><strong>Progressive disclosure via native <code>&lt;details&gt;</code>.</strong> Default surface = monitor + transport + a 5-icon quick row. Teleprompter and Capture settings collapse into disclosure panels (no JS needed for open/close; keyboard-accessible for free). Settings persist across sessions, so hiding them post-setup costs nothing.</li>
+  <li><strong>Icon quick row for per-take toggles:</strong> segmented webcam/screen source switch, mic mute, teleprompter, settings gear — inline SVGs (no emoji, no unicode ● ■ ⏸ approximations). Each icon <em>proxies</em> to the canonical settings input (<code>btnPrompterToggle</code> flips <code>prompterEnable</code> and fires its handler), so persistence and every existing handler work unchanged. <code>syncQuickUI()</code> re-derives icon states from ground truth (<code>mode</code>, <code>micMuted</code>, <code>prompterOn</code>) after every transition.</li>
+  <li><strong>Single source of truth per control.</strong> Mic mute moved out of settings into the quick row (state var <code>micMuted</code>, was a second checkbox). Mic level moved out of the settings grid onto the monitor as an analog VU needle — the design's signature element (fast attack / slow decay ballistics, <code>vuAngle += (target − vuAngle) × (0.5 up / 0.12 down)</code>).</li>
+  <li><strong>Broadcast-equipment visual language.</strong> Tokens: warm charcoal <code>#141210</code>, brass <code>#d9a05b</code>, tally red <code>#e2483d</code>, VU cream; Barlow Condensed (labels) / Barlow (body) / IBM Plex Mono (readouts). Supporting chrome: viewfinder corner brackets (hidden in review playback), tally-lamp status pill, deck-style transport with real SVG glyphs.</li>
+  <li><strong>Critique pass applied:</strong> rejected bezel screws and numbered VU markers as costumery; kept only elements that carry state (needle = level, tally = status, corners = live-vs-review framing).</li>
+</ul>
+
+<h2>Stability guarantees</h2>
+<ul>
+  <li>All element IDs the 41-case node test suite drives are preserved; harness stub gained only <code>setAttribute</code>. Suite passes 41/41 after the refactor.</li>
+  <li>Source switching via icons is inert during countdown/recording/paused; mute and prompter toggles stay live mid-recording by design.</li>
+</ul>
 </body>
 </html>
