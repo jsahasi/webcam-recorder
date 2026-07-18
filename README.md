@@ -1,8 +1,8 @@
 # Webcam Studio
 
-A zero-install, single-file web app for recording high-quality clips — webcam or
-screen share, with an optional speech-following teleprompter.
-Everything is local — no uploads, no accounts, no build step.
+A zero-install, single-file web app for recording high-quality **short clips
+(under ~10 minutes)** — webcam or screen share, with an optional speech-following
+teleprompter. Everything is local — no uploads, no accounts, no build step.
 
 ## Run it
 

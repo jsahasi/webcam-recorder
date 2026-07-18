@@ -335,6 +335,15 @@
   #errorBox code { background: rgba(255, 255, 255, 0.08); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
   #errorBox .close { float: right; background: none; border: none; color: #f0c2b8; font-size: 16px; padding: 0 4px; }
 
+  .faq { padding: 8px 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .faq-item + .faq-item { border-top: 1px solid var(--border); padding-top: 14px; }
+  .faq-q { font-weight: 600; font-size: 13.5px; color: var(--text); margin-bottom: 5px; }
+  .faq-a { font-size: 13px; color: var(--muted); line-height: 1.65; }
+  .faq-a strong { color: #c9bfa9; }
+  .faq-a em { color: #c9bfa9; font-style: italic; }
+  .faq-a ul { margin: 7px 0 0 18px; }
+  .faq-a li { margin: 3px 0; }
+
   footer { max-width: 920px; width: 100%; margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.65; }
   footer strong { color: #c9bfa9; font-weight: 600; }
 
@@ -568,6 +577,41 @@
         <button id="btnCamToggle" class="ghost">Turn camera off</button>
       </div>
     </fieldset>
+  </details>
+
+  <details id="faqDetails">
+    <summary><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>FAQ &amp; limits</summary>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">Where is my recording stored? Is anything uploaded?</div>
+        <div class="faq-a">Entirely in your browser's memory until you click <strong>Download clip</strong> — that
+          is the first and only time the video touches disk. If you serve this page from a local server, it only
+          delivers the page itself; no video bytes ever leave your machine. Browser storage (localStorage) holds
+          just your settings and script text — never video. One exception: the teleprompter's
+          <em>Follow my speech</em> mode uses the browser vendor's cloud speech service (Chrome/Edge need internet
+          for it) — pick <em>Timed scroll</em> for fully offline operation.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How long can a recording be?</div>
+        <div class="faq-a">Webcam Studio is built for <strong>short clips — under ~10 minutes</strong>. A
+          10-minute take at High quality is only ~1 GB, which any modern browser handles comfortably, and the
+          record → review → download loop stays instant.
+          <ul>
+            <li>Longer takes do work in <strong>Chrome / Edge</strong> (the browser pages data to disk as it
+              grows): budget ~3.6 GB/hour at Standard, ~6.3 GB/hour at High, ~10.8 GB/hour at Ultra (1080p).</li>
+            <li><strong>Safari / Firefox</strong> hold the whole take in RAM — stay near the 10-minute target
+              there.</li>
+          </ul>
+          Because a recording lives only in memory until you download it, a tab crash loses the whole take —
+          one more reason to keep clips short and download between takes.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Why keep the tab visible while recording with a watermark or overlay?</div>
+        <div class="faq-a">Watermark and picture-in-picture frames are painted through a canvas, which browsers
+          throttle in background tabs — audio keeps recording but video frames drop. With no watermark and no
+          overlay, recording goes straight from the camera and is unaffected.</div>
+      </div>
+    </div>
   </details>
 
   <footer>
