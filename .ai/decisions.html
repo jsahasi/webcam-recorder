@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ADR-001 — Webcam Studio architecture</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 760px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #1c1c1e; }
+  h1 { font-size: 22px; } h2 { font-size: 16px; margin-top: 1.6em; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  td, th { border: 1px solid #ccc; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f4f4f6; }
+  code { background: #f0f0f2; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  .meta { color: #666; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>ADR-001 — Webcam Studio: single-file browser app</h1>
+<p class="meta">Date: 2026-07-17 · Status: Accepted · Project: <code>webcam-recorder/</code></p>
+
+<h2>Context</h2>
+<p>User wanted an application to record their webcam and produce a high-quality video clip on macOS.</p>
+
+<h2>Decision</h2>
+<p>Build a zero-dependency, single-file browser application (<code>index.html</code>) using
+<code>getUserMedia</code> for capture and <code>MediaRecorder</code> for encoding. No install, no build
+step, no server beyond optional <code>python3 -m http.server</code> for Safari.</p>
+
+<h2>Alternatives considered</h2>
+<table>
+  <tr><th>Option</th><th>Verdict</th><th>Why</th></tr>
+  <tr><td>Python + OpenCV/PyAV</td><td>Rejected</td><td>Dependency friction, audio/video sync is DIY, encoding quality harder to control.</td></tr>
+  <tr><td>Electron wrapper</td><td>Rejected</td><td>Hundreds of MB to deliver what the browser already does natively.</td></tr>
+  <tr><td>Native Swift/AVFoundation</td><td>Deferred</td><td>Best pipeline control, but needs Xcode build/signing; overkill for v1. Revisit if the app grows (virtual camera, editing, streaming).</td></tr>
+  <tr><td>Browser app</td><td><strong>Chosen</strong></td><td>Hardware-accelerated encode for free, permission model built in, portable, immediately runnable.</td></tr>
+</table>
+
+<h2>Codec &amp; quality strategy</h2>
+<ul>
+  <li>MIME preference order: MP4 H.264 High + AAC → plain <code>video/mp4</code> → WebM VP9/Opus → VP8/Opus → WebM. First entry passing <code>MediaRecorder.isTypeSupported</code> wins. MP4-first because the user is on macOS (QuickTime/Quick Look/iMovie).</li>
+  <li>Bitrate presets 8/14/24 Mbps at 1080p, scaled linearly by pixel count, clamped to 4–80 Mbps. Audio 192/256 kbps with echoCancellation, noiseSuppression, autoGainControl.</li>
+  <li><code>recorder.start(1000)</code> timeslice so chunks flush progressively (live file-size readout, less loss on crash); falls back to <code>start()</code> where timeslice is unsupported.</li>
+  <li>Preview is mirrored (cosmetic); recordings are never mirrored.</li>
+</ul>
+
+<h2>Known limits</h2>
+<ul>
+  <li>Safari may refuse camera on <code>file://</code> — README documents the localhost workaround.</li>
+  <li>WebM fallback does not play in QuickTime; README gives the one-line <code>ffmpeg</code> conversion.</li>
+  <li>No editing/trimming in-app — record, review, re-record is the workflow.</li>
+</ul>
+
+<h1>ADR-002 — Screen share, teleprompter, persistence (v2)</h1>
+<p class="meta">Date: 2026-07-17 · Status: Accepted · Supersedes: extends ADR-001</p>
+
+<h2>Context</h2>
+<p>Requested: optional screen-share recording with toggleable webcam, an optional teleprompter that
+follows the speaker's voice (highlight next N words, default 5), adjustable prompter pace, and
+persistence of last-used settings (including the script) across sessions.</p>
+
+<h2>Decisions</h2>
+<ul>
+  <li><strong>Split mic and camera into independent <code>getUserMedia</code> streams.</strong> The webcam can then be stopped entirely during screen share (camera LED off = real privacy) while the mic keeps recording. Camera failure no longer kills audio.</li>
+  <li><strong>Screen + webcam PiP via a hidden canvas compositor</strong> (<code>canvas.captureStream</code>), so the recorded file matches the preview exactly (WYSIWYG). Screen-only and webcam-only modes record tracks directly with no canvas in the path — zero compositing overhead in the common cases.</li>
+  <li><strong>Screen audio mixed via WebAudio</strong> (<code>MediaStreamDestination</code>) only when both mic and shared-tab audio exist — MediaRecorder encodes a single audio track. macOS can only capture <em>tab</em> audio; documented in README.</li>
+  <li><strong>Teleprompter is a DOM overlay, never drawn to the recording canvas.</strong> Speech follow uses the Web Speech API (<code>SpeechRecognition</code>/<code>webkitSpeechRecognition</code>, continuous + interim results). A monotonic word cursor advances by matching recognized words within a lookahead window (12 words for final results, 6 for interim, prefix-matching for interim ≥3 chars). No backward movement — prompters only go forward.</li>
+  <li><strong>Two follow modes:</strong> speech-follow (default) and explicit timed scroll (60–220 wpm). Timed is also the automatic fallback when recognition is unavailable/blocked/offline (Firefox, no network, denied). Pace, font size, highlight count and mode stay adjustable <em>mid-recording</em>; only the script textarea locks while rolling. <code>↑</code>/<code>↓</code> keys bump pace live.</li>
+  <li><strong>Persistence via localStorage</strong> (key <code>webcamStudio.settings.v2</code>) rather than cookies: no server round-trips, no expiry, larger quota. Device IDs are re-validated against <code>enumerateDevices</code> before reuse (stale IDs are dropped). Screen-share source is <em>not</em> restored on boot — <code>getDisplayMedia</code> requires a fresh user gesture each session.</li>
+</ul>
+
+<h2>Known limits (v2)</h2>
+<ul>
+  <li>Chrome/Edge speech recognition sends audio to the vendor's cloud service (needs internet); Safari uses its own service. Firefox has no Web Speech API → timed scroll. All paths degrade gracefully and say so in the UI.</li>
+  <li>Speech recognition listens on the system default mic, not the app-selected one.</li>
+  <li>If the user shares the screen/window containing the app itself, the prompter overlay is visible in the capture — inherent to screen recording; README advises sharing a different window/tab.</li>
+  <li>Canvas PiP caps at the shared screen's native resolution; webcam inset is fixed at 25% width, four corners.</li>
+</ul>
+
+<h1>ADR-003 — Burned-in watermark via unified canvas compositor</h1>
+<p class="meta">Date: 2026-07-17 · Status: Accepted · Extends ADR-002</p>
+
+<h2>Context</h2>
+<p>Requested: a very small credit line across the bottom of the video, <em>part of the recording</em>
+(default <code>Webcam recording Agent: copyright Sahasi &lt;current year&gt;</code>), user-editable.</p>
+
+<h2>Decision</h2>
+<ul>
+  <li>Text can only enter the recorded file by drawing it onto frames, so when a watermark is set, <strong>all</strong> modes route through the canvas compositor (generalized from PiP-only to: any primary source + optional webcam inset + watermark). Preview shows the canvas, keeping WYSIWYG.</li>
+  <li>Empty watermark field ⇒ direct-track recording (zero canvas overhead). The blank-is-off convention avoids a separate toggle.</li>
+  <li>Default string built with <code>new Date().getFullYear()</code> at boot; a saved value (even intentionally blank) overrides the default. Persisted in localStorage like all other settings.</li>
+  <li>Font scales with frame height (~1.6%, ≈17px at 1080p), auto-shrinks to fit 92% of frame width, semi-transparent white with a soft shadow for legibility on light content. Centered, bottom margin ≈1.6× font size.</li>
+</ul>
+
+<h2>Trade-offs accepted</h2>
+<ul>
+  <li>Canvas painting is throttled in background tabs — with a watermark set, the tab should stay visible while recording (documented). Direct-track mode (no watermark) is unaffected.</li>
+  <li>Mirror preview is disabled while a watermark is active: CSS mirroring would flip the text too, breaking preview-equals-recording.</li>
+</ul>
+</body>
+</html>
