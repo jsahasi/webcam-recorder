@@ -23,6 +23,11 @@ may prompt for *Screen Recording* permission too.)
 
 ## Features
 
+- **Cockpit UI**: the default view is just the monitor, the transport, and a row
+  of icon toggles — source (webcam/screen), mic mute, teleprompter, settings.
+  Teleprompter and capture settings live in collapsible panels (click the gear
+  icon or the panel headers) — and since every setting persists, setup is a
+  one-time thing.
 - **Sources**: Webcam, or **Screen share** (screen/window/tab). In screen mode the
   webcam can be toggled off entirely, or kept as a **picture-in-picture overlay**
   in any corner — composited live, so what you preview is exactly what's recorded.
@@ -48,19 +53,23 @@ may prompt for *Screen Recording* permission too.)
 - **Recording**: MP4 (H.264/AAC) where supported, else WebM (VP9/Opus);
   up to 4K webcam or native screen resolution; 24/30/60 fps; ~8/14/24 Mbps
   presets scaled by resolution; 192–256 kbps audio; pause/resume; countdown;
-  mic-level meter; live time + file size; timestamped downloads.
+  analog VU mic meter; live time + file size; timestamped downloads.
 
 ## Use it
 
-1. Pick a **Source**: *Webcam* or *Screen share* (browser asks what to share).
-   In screen mode, use **Include webcam overlay** to toggle your camera off or
-   add it as a corner inset.
-2. Optionally enable the **Teleprompter**, paste your script, choose a follow
-   mode and pace.
-3. Check the **mic level** meter moves when you speak.
-4. Hit **● Record** (or `Space`). Pause/resume anytime; tweak prompter pace live.
-5. Hit **■ Stop** → review → **⬇ Download clip** (saved to Downloads as
-   `webcam-YYYYMMDD-HHMMSS.mp4|webm`). Not happy? **↺ Re-record**.
+1. Pick a source on the **icon row** under the transport: **webcam** or
+   **screen share** (the browser asks what to share). Screen options — webcam
+   overlay on/off, overlay corner, tab audio — are in **Capture settings**
+   (gear icon).
+2. Optionally toggle the **teleprompter** (script icon). If no script is saved
+   yet its panel opens automatically — paste your script, pick a follow mode
+   and pace.
+3. Speak: the **VU needle** on the monitor should swing. Mute anytime with the
+   mic icon.
+4. Hit **Record** (or `Space`). Pause/resume anytime; tweak prompter pace live
+   with the slider or `↑`/`↓`.
+5. Hit **Stop** → review → **Download clip** (saved to Downloads as
+   `webcam-YYYYMMDD-HHMMSS.mp4|webm`). Not happy? **Re-record**.
 
 ## Notes & limits
 
@@ -94,6 +103,7 @@ may prompt for *Screen Recording* permission too.)
 
 | Symptom | Fix |
 |---|---|
+| Can't find a setting (resolution, watermark, …) | Panels are collapsed by default — click the **gear icon**, or the **Capture settings** / **Teleprompter** headers |
 | Black preview / "permission denied" | Allow camera in the address bar; check macOS Privacy settings above |
 | "Camera is in use by another app" | Quit Zoom/FaceTime/Photo Booth and retry |
 | Safari: camera never starts on `file://` | Use the `python3 -m http.server` method |
