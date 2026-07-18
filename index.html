@@ -119,7 +119,7 @@
     font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums;
   }
   .badge .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tally); box-shadow: 0 0 10px 2px var(--tally-glow); animation: pulse 1.2s infinite; }
-  .badge.paused .dot { background: var(--amber); box-shadow: none; animation: none; }
+  .badge.paused .dot, .badge.auto .dot { background: var(--amber); box-shadow: none; animation: none; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
 
   #countdownOverlay {
@@ -434,6 +434,9 @@
     <button id="btnPrompterToggle" class="qbtn" title="Teleprompter" aria-pressed="false">
       <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
     </button>
+    <button id="btnAutoCut" class="qbtn" title="Auto-cut extended silences" aria-pressed="false">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+    </button>
     <button id="btnSettingsToggle" class="qbtn" title="Capture settings">
       <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
@@ -562,6 +565,20 @@
         </select>
       </div>
 
+      <div class="field">
+        <label>Auto-edit</label>
+        <div class="check"><input type="checkbox" id="autoCutCheck"><label for="autoCutCheck">Cut extended silences</label></div>
+      </div>
+
+      <div class="field">
+        <label for="autoCutSec">Silence longer than</label>
+        <select id="autoCutSec">
+          <option value="1">1 second</option>
+          <option value="2" selected>2 seconds</option>
+          <option value="3">3 seconds</option>
+        </select>
+      </div>
+
       <div class="field full">
         <label for="watermarkInput" id="watermarkLabel">Watermark <span class="subtle">(burned into the recording — leave empty for none)</span></label>
         <input type="text" id="watermarkInput" maxlength="200" spellcheck="false" readonly>
@@ -606,6 +623,14 @@
           one more reason to keep clips short and download between takes.</div>
       </div>
       <div class="faq-item">
+        <div class="faq-q">Can it remove “um”, “ah” and other filler words?</div>
+        <div class="faq-a">Not yet — the scissors toggle removes <strong>silences</strong>, including the pauses
+          around filler words, but the words themselves carry sound, so level-based cutting can't catch them.
+          Live speech recognition reports too late (~0.5–1 s behind your voice) to cut them on the fly, and it
+          exposes no word timestamps. True filler removal needs post-processing — an on-device speech model,
+          then a cut and re-encode — which is on the roadmap as an optional Chrome/Edge-only step.</div>
+      </div>
+      <div class="faq-item">
         <div class="faq-q">Why keep the tab visible while recording with a watermark or overlay?</div>
         <div class="faq-a">Watermark and picture-in-picture frames are painted through a canvas, which browsers
           throttle in background tabs — audio keeps recording but video frames drop. With no watermark and no
@@ -640,6 +665,7 @@ const els = {
   btnCamToggle: $('btnCamToggle'),
   btnSrcWebcam: $('btnSrcWebcam'), btnSrcScreen: $('btnSrcScreen'),
   btnMuteToggle: $('btnMuteToggle'), btnPrompterToggle: $('btnPrompterToggle'),
+  btnAutoCut: $('btnAutoCut'),
   btnSettingsToggle: $('btnSettingsToggle'),
   prompterDetails: $('prompterDetails'), settingsDetails: $('settingsDetails'),
   settings: $('settings'), prompterSettings: $('prompterSettings'),
@@ -649,6 +675,7 @@ const els = {
   cameraSelect: $('cameraSelect'), micSelect: $('micSelect'),
   resolutionSelect: $('resolutionSelect'), fpsSelect: $('fpsSelect'),
   qualitySelect: $('qualitySelect'), countdownSelect: $('countdownSelect'),
+  autoCutCheck: $('autoCutCheck'), autoCutSec: $('autoCutSec'),
   watermarkInput: $('watermarkInput'), watermarkLabel: $('watermarkLabel'),
   mirrorCheck: $('mirrorCheck'),
   micLevel: $('micLevel'),
@@ -699,6 +726,16 @@ let tAccum = 0, tLast = 0, timerIv = null;
 
 // audio meter (VU needle)
 let meterCtx = null, meterRAF = 0, vuAngle = -55;
+let lastMicLevel = 0;          // latest peak from the meter loop (0..1), read by auto-cut
+
+// auto-cut: recorder auto-pauses during extended silences so dead air
+// never reaches the file. autoPaused composes with manual pause via
+// applyEffectivePause() — either one keeps the recorder paused.
+let autoPaused = false;
+let silenceSince = 0;          // timestamp continuous silence began (0 = speech)
+let autoCutIv = null;
+const AUTOCUT_TICK_MS = 100;
+const AUTOCUT_LEVEL = 0.03;    // peak threshold — below this is room tone, not speech
 
 // quick-toggle state (canonical home for mic mute — mirrored to the icon button)
 let micMuted = false;
@@ -761,6 +798,7 @@ function saveSettings() {
     camera: els.cameraSelect.value, mic: els.micSelect.value,
     resolution: els.resolutionSelect.value, fps: els.fpsSelect.value,
     quality: els.qualitySelect.value, countdown: els.countdownSelect.value,
+    autoCut: els.autoCutCheck.checked, autoCutSec: els.autoCutSec.value,
     watermark: els.watermarkInput.value,
     mirror: els.mirrorCheck.checked, mute: micMuted,
     webcamOverlay: els.webcamOverlayCheck.checked, shareAudio: els.shareAudioCheck.checked,
@@ -781,6 +819,8 @@ function applySettings(s) {
   if (s.fps) els.fpsSelect.value = s.fps;
   if (s.quality) els.qualitySelect.value = s.quality;
   if (s.countdown != null) els.countdownSelect.value = String(s.countdown);
+  if (s.autoCut != null) els.autoCutCheck.checked = !!s.autoCut;
+  if (s.autoCutSec) els.autoCutSec.value = String(s.autoCutSec);
   if (s.watermark != null) els.watermarkInput.value = s.watermark;
   if (s.mirror != null) els.mirrorCheck.checked = !!s.mirror;
   if (s.mute != null) micMuted = !!s.mute;
@@ -976,6 +1016,7 @@ function setupMeter() {
       const target = -55 + Math.min(1, peak * 1.6) * 110;
       vuAngle += (target - vuAngle) * (target > vuAngle ? 0.5 : 0.12);
       els.micLevel.style.transform = `rotate(${vuAngle.toFixed(1)}deg)`;
+      lastMicLevel = peak;
       meterRAF = requestAnimationFrame(loop);
     };
     loop();
@@ -984,6 +1025,43 @@ function setupMeter() {
 function applyMute() {
   if (!micStream) return;
   micStream.getAudioTracks().forEach(t => { t.enabled = !micMuted; });
+}
+
+// ---------- Pause arbitration (manual pause + auto-cut compose) ----------
+function applyEffectivePause() {
+  if (!recorder) return;
+  const wantPaused = (state === 'paused') || autoPaused;
+  if (wantPaused && recorder.state === 'recording') { recorder.pause(); timerPause(); }
+  else if (!wantPaused && recorder.state === 'paused') { recorder.resume(); timerResume(); }
+  els.recBadge.classList.toggle('auto', autoPaused && state === 'recording');
+}
+
+// ---------- Auto-cut: trim extended silences live ----------
+// Watches the mic envelope while recording; after a sustained silence the
+// recorder pauses (dead air never reaches the file) and resumes on speech.
+// Inert while the mic is muted — a muted track reads as permanent silence.
+function startAutoCutWatch() {
+  stopAutoCutWatch();
+  autoCutIv = setInterval(() => {
+    if (!els.autoCutCheck.checked || state !== 'recording' || micMuted || !micStream) { silenceSince = 0; return; }
+    const now = performance.now();
+    if (lastMicLevel < AUTOCUT_LEVEL) {
+      if (!silenceSince) silenceSince = now;
+      else if (!autoPaused && now - silenceSince >= Number(els.autoCutSec.value) * 1000) {
+        autoPaused = true;
+        applyEffectivePause();
+      }
+    } else {
+      silenceSince = 0;
+      if (autoPaused) { autoPaused = false; applyEffectivePause(); }
+    }
+  }, AUTOCUT_TICK_MS);
+}
+function stopAutoCutWatch() {
+  clearInterval(autoCutIv);
+  autoCutIv = null;
+  silenceSince = 0;
+  if (autoPaused) { autoPaused = false; applyEffectivePause(); }   // resume before stop → clean timer math
 }
 
 // ---------- Screen share ----------
@@ -1040,6 +1118,8 @@ function syncQuickUI() {
   els.btnMuteToggle.setAttribute('aria-pressed', String(micMuted));
   els.btnPrompterToggle.classList.toggle('active', prompterOn);
   els.btnPrompterToggle.setAttribute('aria-pressed', String(prompterOn));
+  els.btnAutoCut.classList.toggle('active', els.autoCutCheck.checked);
+  els.btnAutoCut.setAttribute('aria-pressed', String(els.autoCutCheck.checked));
 }
 
 // ---------- Preview pipeline ----------
@@ -1301,16 +1381,19 @@ async function startRecording() {
   if (prompterOn) { resetPrompter(); startTimedScrollIfNeeded(); }
 
   timerStart();
+  startAutoCutWatch();
   setState('recording');
   setStatus('Recording', 'rec');
 }
 
 function stopRecording() {
+  stopAutoCutWatch();   // resumes the recorder first if an auto-cut pause is active
   if (recorder && recorder.state !== 'inactive') recorder.stop();
 }
 
 function finalizeRecording() {
-  const ms = tAccum + (state === 'paused' ? 0 : performance.now() - tLast);
+  const recPaused = state === 'paused' || autoPaused;
+  const ms = tAccum + (recPaused ? 0 : performance.now() - tLast);
   clearInterval(timerIv);
   if (!timedModeSelected()) stopTimedScroll();   // explicit timed mode keeps pacing in idle/review
   if (mixCtx) { mixCtx.close().catch(() => {}); mixCtx = null; }
@@ -1367,7 +1450,8 @@ function timerStart() {
   timerTick();
 }
 function timerTick() {
-  const ms = tAccum + (state === 'paused' ? 0 : performance.now() - tLast);
+  const recPaused = state === 'paused' || autoPaused;
+  const ms = tAccum + (recPaused ? 0 : performance.now() - tLast);
   els.recTime.textContent = formatTime(ms);
   els.recSize.textContent = bytesRecorded ? ' · ' + formatBytes(bytesRecorded) : '';
 }
@@ -1625,17 +1709,9 @@ els.btnRecord.onclick = () => {
 els.btnStop.onclick = stopRecording;
 els.btnPause.onclick = () => {
   if (!recorder) return;
-  if (recorder.state === 'recording') {
-    recorder.pause();
-    timerPause();
-    setState('paused');
-    setStatus('Paused', 'warn');
-  } else if (recorder.state === 'paused') {
-    recorder.resume();
-    timerResume();
-    setState('recording');
-    setStatus('Recording', 'rec');
-  }
+  if (state === 'recording') { setState('paused'); setStatus('Paused', 'warn'); }
+  else if (state === 'paused') { setState('recording'); setStatus('Recording', 'rec'); }
+  applyEffectivePause();   // manual pause/resume composes with an active auto-cut pause
 };
 els.btnDownload.onclick = () => {
   if (!recordedBlob) return;
@@ -1713,6 +1789,12 @@ els.btnPrompterToggle.onclick = () => {
   if (prompterOn && !els.prompterScript.value.trim()) els.prompterDetails.open = true;
 };
 els.btnSettingsToggle.onclick = () => { els.settingsDetails.open = !els.settingsDetails.open; };
+els.autoCutCheck.onchange = () => { saveSettings(); syncQuickUI(); };
+els.autoCutSec.onchange = saveSettings;
+els.btnAutoCut.onclick = () => {   // live-toggleable mid-recording; the watcher reads it each tick
+  els.autoCutCheck.checked = !els.autoCutCheck.checked;
+  els.autoCutCheck.onchange();
+};
 els.cameraSelect.onchange = () => { saveSettings(); if (state === 'idle') startVideo(); };
 els.micSelect.onchange    = () => { saveSettings(); if (state === 'idle') startAudio(); };
 els.resolutionSelect.onchange = () => { saveSettings(); if (state === 'idle' && mode === 'webcam') startVideo(); };

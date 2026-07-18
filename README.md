@@ -24,10 +24,10 @@ may prompt for *Screen Recording* permission too.)
 ## Features
 
 - **Cockpit UI**: the default view is just the monitor, the transport, and a row
-  of icon toggles — source (webcam/screen), mic mute, teleprompter, settings.
-  Teleprompter and capture settings live in collapsible panels (click the gear
-  icon or the panel headers) — and since every setting persists, setup is a
-  one-time thing.
+  of icon toggles — source (webcam/screen), mic mute, teleprompter, auto-cut,
+  settings. Teleprompter and capture settings live in collapsible panels (click
+  the gear icon or the panel headers) — and since every setting persists, setup
+  is a one-time thing.
 - **Sources**: Webcam, or **Screen share** (screen/window/tab). In screen mode the
   webcam can be toggled off entirely, or kept as a **picture-in-picture overlay**
   in any corner — composited live, so what you preview is exactly what's recorded.
@@ -50,6 +50,11 @@ may prompt for *Screen Recording* permission too.)
 - **Persistence**: every setting — devices, resolution, fps, quality, countdown,
   overlay options, watermark text, teleprompter on/off, **the script itself**,
   pace — is saved to localStorage and restored on next visit.
+- **Auto-cut silences**: optional live trimming — with the scissors toggle on,
+  the recorder **auto-pauses after a sustained silence** (1–3 s, configurable in
+  Capture settings) and **resumes the instant you speak**, so dead air never
+  lands in the file. Same jump-cut result as post-hoc silence removers, with no
+  re-encode. Inert while the mic is muted.
 - **Recording**: MP4 (H.264/AAC) where supported, else WebM (VP9/Opus);
   up to 4K webcam or native screen resolution; 24/30/60 fps; ~8/14/24 Mbps
   presets scaled by resolution; 192–256 kbps audio; pause/resume; countdown;
@@ -66,8 +71,9 @@ may prompt for *Screen Recording* permission too.)
    and pace.
 3. Speak: the **VU needle** on the monitor should swing. Mute anytime with the
    mic icon.
-4. Hit **Record** (or `Space`). Pause/resume anytime; tweak prompter pace live
-   with the slider or `↑`/`↓`.
+4. Hit **Record** (or `Space`). **Pause/resume** anytime with the ⏸ button;
+   toggle the **scissors icon** to auto-cut extended silences as you record;
+   tweak prompter pace live with the slider or `↑`/`↓`.
 5. Hit **Stop** → review → **Download clip** (saved to Downloads as
    `webcam-YYYYMMDD-HHMMSS.mp4|webm`). Not happy? **Re-record**.
 
@@ -104,6 +110,8 @@ may prompt for *Screen Recording* permission too.)
 | Symptom | Fix |
 |---|---|
 | Can't find a setting (resolution, watermark, …) | Panels are collapsed by default — click the **gear icon**, or the **Capture settings** / **Teleprompter** headers |
+| Recording "pauses" by itself mid-take | The **scissors toggle** (auto-cut) is on — it pauses the recorder during extended silences; the badge dot turns amber. Toggle it off to record continuously |
+| Auto-cut never kicks in | Inert while the mic is **muted**; otherwise check the VU needle moves when you speak — a very quiet mic may sit below the silence threshold |
 | Black preview / "permission denied" | Allow camera in the address bar; check macOS Privacy settings above |
 | "Camera is in use by another app" | Quit Zoom/FaceTime/Photo Booth and retry |
 | Safari: camera never starts on `file://` | Use the `python3 -m http.server` method |

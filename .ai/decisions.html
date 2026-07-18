@@ -149,5 +149,19 @@ fieldsets (~19 controls) plus unicode-glyph buttons: a wall of settings for a ta
   <li>All element IDs the 41-case node test suite drives are preserved; harness stub gained only <code>setAttribute</code>. Suite passes 41/41 after the refactor.</li>
   <li>Source switching via icons is inert during countdown/recording/paused; mute and prompter toggles stay live mid-recording by design.</li>
 </ul>
+
+<h1>ADR-007 — Live auto-cut of extended silences</h1>
+<p class="meta">Date: 2026-07-18 · Status: Accepted</p>
+
+<h2>Context</h2>
+<p>Requested: pause/resume while recording (already shipped via MediaRecorder.pause/resume) and a
+toggle to remove extended silences, um's and ah's from the saved video.</p>
+
+<h2>Decision</h2>
+<ul>
+  <li><strong>Silences: live auto-pause, no re-encode.</strong> A 100 ms watcher reads the mic peak published by the VU meter loop; after a sustained silence (peak &lt; 0.03 for 1–3 s, configurable, default 2 s) the recorder pauses; speech onset resumes it (~30–50 ms detection latency). Dead air never reaches the file — the same jump-cut result as post-hoc silence removers, at zero processing cost, in every browser. Toggle: quick-row scissors icon proxied to a settings checkbox; persisted; live-toggleable mid-recording.</li>
+  <li><strong>Pause arbitration.</strong> Manual pause (app state) and auto-pause (<code>autoPaused</code> flag) compose through <code>applyEffectivePause()</code> — either holds the recorder paused, the on-screen timer freezes on either, and Stop always resumes-then-stops so duration math stays exact. Auto-cut is inert while the mic is muted (a muted track reads as permanent silence).</li>
+  <li><strong>Filler words (um/ah): deliberately not live.</strong> Web Speech API recognition latency (~0.5–1 s) means a filler is already recorded before it's recognized, and the API exposes no word timestamps — live excision is impossible. Real removal needs post-processing: an on-device Whisper model for timestamps plus a WebCodecs cut/re-encode (Chrome/Edge-only, ~40 MB model download, ~1–3 min per 5-min clip). Documented in the in-app FAQ as a possible future phase rather than shipped half-working.</li>
+</ul>
 </body>
 </html>
